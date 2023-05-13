@@ -50,14 +50,41 @@ Class UserController extends Controller {
     }
 
     public function show($id){
-        $users = User::where('userId', $id)->first();
-        if ($users){
+        $users = User::findOrFail($id);
             return $this -> successReponse($users);
-        }
-        {
-            return $this-> errorResponse('User Does Not Exist', Response::HTTP_NOT_FOUND);
-        }
+        
+        
+            //return $this-> errorResponse('User Does Not Exist', Response::HTTP_NOT_FOUND);
+        
         
     }
-    
+
+    public function update(Request  $request,$id)
+    {
+        $rules = [
+            'username' => 'required|max:50',
+            'password' => 'required|max:50',
+            'gender' => 'required|in:Male,Female',
+        ];
+
+        $this -> validate($request, $rules);
+        $users = User::findOrFail($id);
+
+        $users -> fill($request->all());
+
+        if ($users -> isClean()) {
+            return $this -> errorResponse('At least one value must change', Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $users->save();
+        return $this -> successReponse($users);
+    }
+
+
+    public function delete($id)
+    {
+     $users = User::findOrFail($id);
+     $users->delete();
+     return $this -> successReponse('The data has been removed/deleted');
+    }
 }
